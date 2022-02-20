@@ -1,5 +1,5 @@
 # komionm
-This is a Python script to download said `Komi Can't Communicate chapters`. This code is messy, idk why i use `asyncio` and `aiohttp`.
+This is a Python script to download said `Komi Can't Communicate` chapters. This code is messy, idk why i use `asyncio` and `aiohttp`.
 
 ## Requirements
 1. [Python](https://www.python.org)
