@@ -6,13 +6,19 @@ termux="/storage/emulated/0/komionm/chapters/"
 echo "Installing python packages..."
 pip3 install -r requirements.txt
 
-echo "1. GNU/Linux\n2. Android (Termux)"
+echo "\n1. GNU/Linux\n2. Android (Termux)"
 
 while true; do
 	echo -n "Please choose the platform that you currently use: "
 	read choices
 
 	if [ $choices -eq 1 ]; then
+
+		if [ $(uname -o) = "Android" ]; then
+			echo "You're on Android ._."
+			break
+		fi
+
 		mkdir ~/komionm
 		mkdir ~/komionm/chapters
 		sudo cp komionm /usr/local/bin/komionm
