@@ -1,0 +1,162 @@
+#!/bin/python3
+
+import aiohttp
+import re
+import asyncio
+import os
+from bs4 import BeautifulSoup as bs
+
+async def get_req_res(url: str) -> str:
+
+	async with aiohttp.ClientSession() as resp:
+		async with resp.get(url) as res:
+			if res.status == 200: return await res.text()
+			else: return str(res.status)
+
+async def gen_html(url_s, chapters: list, chpt_name: str) -> None:
+
+	url_resp_res = ""
+
+	if len(chapters) == 1: chapter = f"{chapters[0]}"
+	else: chapter = f"{chapters[0]}_{chapters[1]}"
+
+	if type(url_s) == list:
+
+		for x in url_s:
+			url_resp_res += await get_req_res(x)
+
+	else:
+		url_resp_res = await get_req_res(url_s)
+
+	navbl_res = bs(url_resp_res, "html.parser")
+
+	bad_tags = navbl_res.find_all(re.compile("(div|figure)"), {"class": re.compile("(wp-block-image|separator)")})
+
+	if len(bad_tags) == 0:
+		print("\033[1;31mChapter is empty. Please wait until the chapter is released\033[0m")
+		quit()
+
+	img_tags = [str(x.find("img")) for x in bad_tags]
+	pretty_imgs = "\n".join(img_tags)
+
+	with open(f"chapters/chc_{chapter}.html", "w") as file:
+		file.write(f"""<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>{chpt_name}</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style type="text/css">body {{ background-color: #3B3A39; }}</style>
+	</head>
+
+	<body>
+		{pretty_imgs}
+	</body>
+
+</html>
+""")
+
+async def main():
+	soup_base = "https://w3.komisanwamanga.com"
+	counter = 0
+	check_inp = False
+	select_scr = ""
+	title_link = []
+
+	home_page = await get_req_res(soup_base)
+	use_home_pg = bs(home_page, "html.parser")
+
+	chapters = use_home_pg.find_all("li", {"class": "su-post"})
+	chpt_links = [x.find("a") for x in chapters[len(chapters)-6::-1]]
+	chapters.clear()
+
+	for x in chpt_links: title_link.append([x.get("href"), x.string])
+	for y in title_link:
+		counter += 1
+		select_scr += f"\033[1;34m[{counter}] \033[1;36m{y[1]}\033[0m\n"
+
+	print(select_scr)
+	print("\033[1;33mTo download specific range of chapters (choices), use this format 'start_chapter end_chapter'. Example: 47 55\033[0m")
+
+	while check_inp == False:
+		try:
+			raw_chapter = input(f"\033[1;35mPlease choose the chapter (1-{counter}): \033[0m").strip(" 	\n")
+			cook_chapter = [int(x) for x in raw_chapter.split()]
+
+			if len(cook_chapter) == 1:
+				if cook_chapter[0] > counter or cook_chapter[0] < 1:
+					print(f"\033[1;31mThere is no the {cook_chapter[0]}th chapter\033[0m")
+					continue
+
+				check_inp = True
+
+			elif len(cook_chapter) == 2:
+				if cook_chapter[0] > cook_chapter[1]:
+					print("\033[1;31mStart chapter cannnot have bigger value than the end chapter\033[0m")
+					continue
+
+				elif any(x > counter or x < 1 for x in cook_chapter):
+					print("\033[1;31mChapter out of range\033[0m")
+					continue
+
+				check_inp = True
+
+			else:
+				print("\033[1;31mInvalid input format\033[0m")
+				continue
+
+		except ValueError:
+			print("\033[1;31mPlease input valid number\033[0m")
+			continue
+
+	if len(cook_chapter) == 1:
+
+		await gen_html(title_link[cook_chapter[0]-1][0], str(cook_chapter[0]).split(), title_link[cook_chapter[0]-1][1])
+		print(f"\033[1;32mHTML page generated\nLocation: 'chapters/chc_{cook_chapter[0]}.html'\033[0m")
+		filename = f"chc_{cook_chapter[0]}.html"
+
+	elif len(cook_chapter) == 2:
+
+		check_inp = False
+
+		while check_inp == False:
+			merge = input("\033[1;35mMerge chapters to a single file ? (y/n): \033[0m")
+
+			if merge.lower() == 'n':
+
+				for i in range(cook_chapter[0], cook_chapter[1]+1):
+					await gen_html(title_link[i-1][0], str(i).split(), title_link[i-1][1])
+					print(f"\033[1;32mHTML page generated\nLocation: 'chapters/chc_{i}.html\033[0m'")
+
+				filename = f"chc_{i}.html"
+				check_inp = True
+
+			elif merge.lower() == 'y':
+
+				usr_chp_lnks = []
+
+				for i in range(cook_chapter[0], cook_chapter[1]+1):
+					usr_chp_lnks.append(title_link[i-1][0])
+
+				print("\033[1;33mThis may take a while. Please wait until its completed\033[0m")
+				await gen_html(usr_chp_lnks, cook_chapter, f"Komi-san wa Chapter {cook_chapter[0]}-{cook_chapter[1]}")
+				print(f"\033[1;32mHTML page have been generated\nLocation: 'chapters/chc_{cook_chapter[0]}_{cook_chapter[1]}.html'\033[0m")
+
+				filename = f"chc_{cook_chapter[0]}_{cook_chapter[1]}.html"
+				check_inp = True
+
+			else:
+				print("\033[1;31mNo such option\033[0m")
+				continue
+
+	check_inp = False
+
+	while check_inp == False:
+
+		read_now = input("\033[1;35mDo you want to read it now ? (y/n): \033[0m ")
+
+		if read_now.lower() == 'y': os.system(f"xdg-open chapters/{filename}"); check_inp = True
+		elif read_now.lower() == 'n': check_inp = True
+		else: print("\033[1;31mNo such option exist\033[0m"); continue
+
+asyncio.run(main())
