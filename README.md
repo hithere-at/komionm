@@ -1,13 +1,14 @@
 # komionm
-This is a Python script to download said `Komi Can't Communicate` chapters. This code is messy, idk why i use `asyncio` and `aiohttp`.
+This is a Python script to download said `Komi Can't Communicate` chapters. This code is messy, idk why i use `asyncio` and `aiohttp`. This script scrape [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the chapters
 
 ## Windows version ?
-Look, i do not have any PC and i made the script on my phone. I dont know how Python works on Windows and how to make a batch script. Im sorry, but i can't say anything for Windows
+I dont have PC. Sorry ._.
 
 ## Requirements
 1. [Python](https://www.python.org)
 2. sed
-3. xdg-open
+3. curl
+4. [git](https://git-scm.com)
 
 ## How To Install
 ```
@@ -24,3 +25,8 @@ sh install.sh
 1. This script works for `Termux` legacy version (`<= 0.83`) or later.
 2. `GNU/Linux` version of install is untested, but i think it works just by looking at the command.
 3. This script is tested on Python 3.8, but i think Python 3.6 or above should work
+
+## Credits
+1. [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the `Komi Can't Communicate` chapters and easy to scrape website.
+2. StackOverflow that helps me making this script.
+3. [ani-cli](https://github.com/pystardust/ani-cli) for UI inspiration.
