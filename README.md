@@ -15,8 +15,8 @@ I dont have PC. Sorry ._.
 
 ## How To Install
 ```
-git clone https://github.com/hithere-xd/komionm.git && cd komionm
-sh install.sh
+git clone https://github.com/hithere-xd/komionm.git && chmod +x komionm/komionm
+sh komionm/install.sh
 ```
 
 ## Python Dependencies
