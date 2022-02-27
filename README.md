@@ -1,7 +1,7 @@
 # komionm
 This is a Python script to download said `Komi Can't Communicate` chapters. This code is messy, idk why i use `asyncio` and `aiohttp`. This script scrape [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the chapters
 
-<h1 align="center">Showcase</h1>
+<h2 align="center">Showcase</h2>
 <p align="center"><img src="stuff.gif"></p>
 
 ## Windows version ?
