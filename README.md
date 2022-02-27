@@ -1,7 +1,5 @@
-<p align="center">
-<h1>komionm</h1>
-This is a Python script to download said `Komi Can't Communicate` chapters. This code is messy, idk why i use `asyncio` and `aiohttp`. This script scrape [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the chapters
-</p>
+<h1 align="center">komionm</h1>
+<p align="center">This is a Python script to download said `Komi Can't Communicate` chapters. This code is messy, idk why i use `asyncio` and `aiohttp`. This script scrape [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the chapters</p>
 
 <h2 align="center">Showcase</h2>
 <p align="center"><img src="stuff.gif"></p>
