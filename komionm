@@ -3,7 +3,6 @@
 import random
 from urllib.request import urlopen, Request
 import re
-import asyncio
 import os
 from bs4 import BeautifulSoup as bs
 
