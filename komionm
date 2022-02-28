@@ -4,9 +4,16 @@ import random
 from urllib.request import urlopen, Request
 import re
 import os
-from bs4 import BeautifulSoup as bs
 
 data_path = "chapters/"
+
+def idgen(strings: str, length: int) -> str:
+	res = ""
+
+	for _ in range(length):
+		res += random.choice(strings)
+
+	return res
 
 def get_req_res(url: str) -> str:
 	request_obj = Request(url, headers={'User-Agent': 'xd this is fake. fix your auth. btw thank you for the website :D. from hithere'}) # Fake headers
@@ -28,9 +35,8 @@ def gen_html(url_s, chapters: list, chpt_name: str, dl: bool) -> None:
 	else:
 		url_resp_res = get_req_res(url_s)
 
-	navbl_res = bs(url_resp_res, "html.parser")
-
-	bad_tags = navbl_res.find_all(re.compile("(div|figure)"), {"class": re.compile("(wp-block-image|separator)")})
+	bad_tags = re.findall('<img .* src="(https://scans-hot.leanbox.us/manga/.*/.*\.png|https://cdn.readkakegurui.com/file/mangaifenzi22/.*\.jpg|https://www.toonix.xyz/cdn_mangaraw/komi-san-wa-komyushou-desu/.*/.*\.jpg|https://cdn.mushoku-tensei.online/file/mangashnwa/komi-san-wa/.*/.*\.jpg|https://toy.novel-fast.club/cdn_mangaraw/komi-san-wa-komyushou-desu/.*/.*\.jpg)"', url_resp_res)
+	print(bad_tags)
 
 	if len(bad_tags) == 0:
 		print("\033[1;31mChapter is empty. Please wait until the chapter is released\033[0m")
@@ -38,26 +44,21 @@ def gen_html(url_s, chapters: list, chpt_name: str, dl: bool) -> None:
 
 	if dl is True:
 		file_locs = []
-		img_tags = [x.find("img") for x in bad_tags]
-		img_cdns = [x.get("src") for x in img_tags]
+		img_cdns = [re.sub('<img.*src=|"|>', '', x) for x in bad_tags]
 
 		for x in img_cdns:
-			img_id = ""
-
-			for _ in range(10):
-				img_id += str(random.randrange(1, 9))
-
+			img_id = idgen("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 11)
 			loc = "{0}scans/{1}-{2}".format(data_path, img_id, os.path.basename(x))
 			file_locs.append(loc)
-			os.system("curl -s -o {0} {1}".format(loc, x))
+			os.system("curl -s -o {0} '{1}'".format(loc, x))
 
-		cool_stuff = [re.sub('src="(.*)"', 'src="{0}"'.format(file_locs[x]), str(img_tags[x])) for x in range(len(img_tags))]
+		cool_stuff = [re.sub('src="(.*)"', 'src="{0}"'.format(file_locs[x]), bad_tags[x]) for x in range(len(bad_tags))]
 		pretty_imgs = "\n".join(cool_stuff)
 
 	else:
-		img_tags = [str(x.find("img")) for x in bad_tags]
-		pretty_imgs = "\n".join(img_tags)
+		pretty_imgs = "\n".join(bad_tags)
 
+	print(bad_tags)
 	with open("{0}chc_{1}.html".format(data_path, chapter), "w") as file:
 		file.write("""<!DOCTYPE html>
 <html>
@@ -81,7 +82,6 @@ check_inp = False
 select_scr = ""
 
 home_page = get_req_res(soup_base)
-use_home_pg = bs(home_page, "html.parser")
 
 chpt_links = re.findall('"{0}/manga/.*/"'.format(soup_base), home_page)[-6::-1]
 chpt_links.pop(len(chpt_links)-1)
