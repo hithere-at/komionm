@@ -20,9 +20,7 @@ sh komionm/install.sh
 ```
 
 ## Python Dependencies
-1. asyncio
-2. beautifulsoup4
-3. aiohttp
+1. beautfiulsoup4
 
 ## Just some stuff
 1. This script works for `Termux` legacy version (`<= 0.83`) or later.
