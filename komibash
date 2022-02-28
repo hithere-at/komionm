@@ -1,0 +1,8 @@
+#!/bin/bash
+
+idgen() { head -c $1 /dev/urandom | base64; }
+
+soup_base="https://w3.komisanwamanga.com"
+home_pg=$(curl -s "$soup_base")
+shit=$(echo "$home_pg" | grep -o -A 2 -B 2 'https://w3.komisanwamanga.com/manga/[^"]*')
+echo "$shit"
