@@ -1,7 +1,7 @@
 # komire
 This is a Python script to download said `Komi Can't Communicate` chapters. This script scrape [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the chapters. This version of `komiomm` using pure **Regular Expression**, BeautifulSoup4 isnt needed.
 
-**NOTE: This version is unstable and need further testing. Use this if you knoe how to patch the bug. Consider making a pull request too :)**
+**NOTE: This version is unstable and need further testing. Use this if you know how to patch the bug. Consider making a pull request too :)**
 
 <h2 align="center">Showcase</h2>
 <p align="center"><img src="stuff.gif"></p>
