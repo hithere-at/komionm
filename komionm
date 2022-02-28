@@ -21,30 +21,34 @@ def get_req_res(url: str) -> str:
 
 def gen_html(url_s, chapters: list, chpt_name: str, dl: bool) -> None:
 
-	url_resp_res = ""
+	pretty_imgs = ""
 
 	if len(chapters) == 1: chapter = "{0}".format(chapters[0])
 	else: chapter = "{0}_{1}".format(chapters[0], chapters[1])
 
 	if type(url_s) == list:
 
+		clean_src = []
+
 		for x in url_s:
 			url_res = get_req_res(x)
-			url_resp_res += url_res
+			dirty_srcs = re.findall('src="[^"]*"', url_res)
+			clean_src += dirty_srcs[4:-3]
 
 	else:
 		url_resp_res = get_req_res(url_s)
+		dirty_srcs = re.findall('src="[^"]*"', url_resp_res)
+		clean_src = dirty_srcs[4:-3]
 
-	bad_tags = re.findall('<img .* src="(https://scans-hot.leanbox.us/manga/.*/.*\.png|https://cdn.readkakegurui.com/file/mangaifenzi22/.*\.jpg|https://www.toonix.xyz/cdn_mangaraw/komi-san-wa-komyushou-desu/.*/.*\.jpg|https://cdn.mushoku-tensei.online/file/mangashnwa/komi-san-wa/.*/.*\.jpg|https://toy.novel-fast.club/cdn_mangaraw/komi-san-wa-komyushou-desu/.*/.*\.jpg)"', url_resp_res)
-	print(bad_tags)
+	del(dirty_srcs)
 
-	if len(bad_tags) == 0:
+	if len(clean_src) == 0:
 		print("\033[1;31mChapter is empty. Please wait until the chapter is released\033[0m")
 		quit()
 
 	if dl is True:
 		file_locs = []
-		img_cdns = [re.sub('<img.*src=|"|>', '', x) for x in bad_tags]
+		img_cdns = [re.sub('src=|"', '', x) for x in clean_src]
 
 		for x in img_cdns:
 			img_id = idgen("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 11)
@@ -52,13 +56,13 @@ def gen_html(url_s, chapters: list, chpt_name: str, dl: bool) -> None:
 			file_locs.append(loc)
 			os.system("curl -s -o {0} '{1}'".format(loc, x))
 
-		cool_stuff = [re.sub('src="(.*)"', 'src="{0}"'.format(file_locs[x]), bad_tags[x]) for x in range(len(bad_tags))]
-		pretty_imgs = "\n".join(cool_stuff)
+		cool_stuff = [re.sub('src="[^"]*"', 'src="{0}"'.format(file_locs[x]), clean_src[x]) for x in range(len(clean_src))]
+		del(clean_src)
 
-	else:
-		pretty_imgs = "\n".join(bad_tags)
+	else: cool_stuff = clean_src; del(clean_src)
 
-	print(bad_tags)
+	for x in cool_stuff: pretty_imgs += '<img {0} alt="Image not loading. Please refresh your page">\n'.format(x)
+
 	with open("{0}chc_{1}.html".format(data_path, chapter), "w") as file:
 		file.write("""<!DOCTYPE html>
 <html>
@@ -110,7 +114,7 @@ while check_inp == False:
 				print("\033[1;31m\nThere is no the {0}th chapter\033[0m".format(cook_chapter[0]))
 				continue
 
-				check_inp = True
+			check_inp = True
 
 		elif len(cook_chapter) == 2:
 			if cook_chapter[0] > cook_chapter[1]:
