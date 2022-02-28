@@ -24,7 +24,7 @@ sh komionm/install.sh
 ## Just some stuff
 1. This script works for `Termux` legacy version (`<= 0.83`) or later.
 2. `GNU/Linux` version of install is untested, but i think it works just by looking at the command.
-3. This script is tested on Python 3.8, but i think Python 3.6 or above should work
+3. This script is tested on Python 3.8, but i think Python 3.4 or above should work
 
 ## Credits
 1. [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the `Komi Can't Communicate` chapters and easy to scrape website.
