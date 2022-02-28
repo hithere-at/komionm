@@ -79,15 +79,19 @@ soup_base = "https://w3.komisanwamanga.com"
 counter = 0
 check_inp = False
 select_scr = ""
-title_link = []
 
 home_page = get_req_res(soup_base)
 use_home_pg = bs(home_page, "html.parser")
 
-chapters = use_home_pg.find_all("li", {"class": "su-post"})
-chpt_links = [x.find("a") for x in chapters[len(chapters)-6::-1]]
+chpt_links = re.findall('"{0}/manga/.*/"'.format(soup_base), home_page)[-6::-1]
+chpt_links.pop(len(chpt_links)-1)
+clchpt_links = [x.replace('\"', '') for x in chpt_links]
+del(chpt_links)
 
-for x in chpt_links: title_link.append([x.get("href"), x.string])
+dname_links = re.findall('<a href="{0}/manga/.*/">.*<'.format(soup_base), home_page)
+cname_links = [re.sub('<a href=".*">|</a><', '', x) for x in dname_links][-6::-1]
+title_link = [[y, cname_links[x].replace("&#8217;", "'").replace("&#8211;", "–").replace("&#038;", "&")] for x, y in enumerate(clchpt_links)]
+
 for y in title_link:
 	counter += 1
 	select_scr += "\033[1;34m[{0}] \033[1;36m{1}\033[0m\n".format(counter, y[1])
