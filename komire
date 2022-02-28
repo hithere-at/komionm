@@ -83,13 +83,14 @@ select_scr = ""
 home_page = get_req_res(soup_base)
 use_home_pg = bs(home_page, "html.parser")
 
-chpt_links = re.findall('"{0}/manga/.*/"'.format(soup_base), home_page)[-6::-1].pop(357)
-chpt_links = [x.replace('"', '') for x in chpt_links]
-print(chpt_links)
+chpt_links = re.findall('"{0}/manga/.*/"'.format(soup_base), home_page)[-6::-1]
+chpt_links.pop(len(chpt_links)-1)
+clchpt_links = [x.replace('\"', '') for x in chpt_links]
+del(chpt_links)
+
 dname_links = re.findall('<a href="{0}/manga/.*/">.*<'.format(soup_base), home_page)
 cname_links = [re.sub('<a href=".*">|</a><', '', x) for x in dname_links][-6::-1]
-print(cname_links)
-title_link = [[y, cname_links[x]] for x, y in enumerate(chpt_links)]
+title_link = [[y, cname_links[x].replace("&#8217;", "'").replace("&#8211;", "–").replace("&#038;", "&")] for x, y in enumerate(clchpt_links)]
 
 for y in title_link:
 	counter += 1
