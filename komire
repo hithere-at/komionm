@@ -15,6 +15,13 @@ def idgen(strings: str, length: int) -> str:
 
 	return res
 
+def img_download(url: str, file_path: str):
+	headers = Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+	img_binary = urlopen(headers).read()
+
+	with open(file_path, "wb") as image:
+		image.write(img_binary)
+
 def get_req_res(url: str) -> str:
 	request_obj = Request(url, headers={'User-Agent': 'xd this is fake. fix your auth. btw thank you for the website :D. from hithere'}) # Fake headers
 	return urlopen(request_obj).read().decode()
@@ -54,7 +61,7 @@ def gen_html(url_s, chapters: list, chpt_name: str, dl: bool) -> None:
 			img_id = idgen("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 11)
 			loc = "{0}scans/{1}-{2}".format(data_path, img_id, os.path.basename(x))
 			file_locs.append(loc)
-			os.system("curl -s -o {0} '{1}'".format(loc, x))
+			img_download(x, loc)
 
 		cool_stuff = [re.sub('src="[^"]*"', 'src="{0}"'.format(file_locs[x]), clean_src[x]) for x in range(len(clean_src))]
 		del(clean_src)
