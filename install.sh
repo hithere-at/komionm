@@ -9,9 +9,6 @@ fi
 if ! $(command -v curl > /dev/null 2>&1); then "curl isnt installed. Install it using your package manager"; exit 1
 fi
 
-echo "Installing dependencies..."
-pip3 install -r requirements.txt > /dev/null 2>&1
-
 echo "\n1. GNU/Linux\n2. Android (Termux)"
 
 while true; do
