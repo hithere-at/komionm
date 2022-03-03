@@ -1,6 +1,67 @@
 #!/bin/sh
 
-idgen() { head -c $1 /dev/urandom | base64; }
+data_path=chapters/
+
+idgen() { head -c $1 /dev/urandom | base64 | sed "s|/||g"; }
+gen_html() {
+
+	pretty_imgs=""
+	chapter_count=$(echo "$1" | wc -l)
+	x=1
+
+	if [ $chapter_count -eq 1 ]; then
+		url_resp_res=$(curl -s "$1")
+		dirty_srcs=$(echo "$url_resp_res" | grep -o 'src="[^"]*"')
+		limb=$(($(echo "$dirty_srcs" | wc -l) - 3))
+		clean_src=$(echo "$dirty_srcs" | awk "NR >= 5 && NR <= $limb")
+		clean_limb=$(echo "$clean_src" | wc -l)
+
+	fi
+
+	if [ "$4" = "dl" ]; then
+		img_cdns=$(echo "$clean_srcs" | sed -E 's/src=|"//g')
+		file_locs=""
+
+		while [ $x -le $clean_limb ]; do
+			img_id="$(idgen 6)"
+			curr_cdn=$(echo "$img_cdns" | awk 'NR == $x')
+			format_file="${curr_cdn##*/}"
+			loc="${data_path}scans/${img_id}_${format_file}"
+			file_locs="${file_locs}$loc\n"
+			pretty_imgs="${pretty_imgs}<src=\"${loc}\" alt=\"Image not loading. Please refresh your page\">\n"
+			curl -s -o "$format_file" "$curr_cdn"
+			x=$((x + 1))
+		done
+
+	else
+		while [ $x -le $clean_limb ]; do
+			src_img=$(echo "$clean_src" | awk "NR == $x")
+			echo "$src_img"
+			pretty_imgs="${pretty_imgs}<img ${src_img} alt=\"Image not loading. Please refresh your page\">\n"
+			x=$((x + 1))
+		done
+
+	fi
+
+	while IFS= read -r line; do
+		echo "$line"
+	done <<- EOF > ${data_path}chc_$2.html
+	<!DOCTYPE html>
+	<html>
+
+		<head>
+			<title>$3</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<style type="text/css">body { background-color: #3B3A39; }</style>
+		</head>
+
+		<body>
+			$pretty_imgs
+		</body>
+
+	</html>
+	EOF
+}
 
 mkdir ~/.komichi 2> /dev/null
 
@@ -17,11 +78,11 @@ pretty_links=$(echo "$chpts_links" | awk "NR <= $rlimit" | tac)
 clchpt_links=$(echo "$pretty_links" | sed -E "s/<a href=|\"|>.*//g")
 
 # Chapter names
-cname_links=$(echo "$pretty_links" | sed -E -e "s/<a href=\"[^\"]*\">|<\/a><//g" -e "s/&#8217;/'/g" -e "s/&#8211\;/-/g" -e "s/&#038\;/&/g" > ~/.komichi/$session_file)
+cname_links=$(echo "$pretty_links" | sed -E -e "s/<a href=\"[^\"]*\">|<\/a><//g" -e "s/&#8217;/'/g" -e "s/&#8211\;/-/g" -e "s/&#038\;/&/g" -e "s/&#8230;/... /g" > ~/.komichi/$session_file)
 
 while IFS= read line; do
 	counter=$((counter + 1))
-	printf "\033[1;34m[${counter}] \033[1;36m${line}\033[0m\n"
+	echo "\033[1;34m[${counter}] \033[1;36m${line}\033[0m"
 done < ~/.komichi/$session_file
 
 rm ~/.komichi/$session_file 2> /dev/null
@@ -47,9 +108,44 @@ while true; do
 		fi
 
 	elif ! [ -z $end ]; then
-		if [ $start -eq $start ] 2> /dev/null && [ $end -eq $end ] 2> /dev/null; then			true
+		if [ $start -eq $start ] 2> /dev/null && [ $end -eq $end ] 2> /dev/null; then
+			if [ $start -gt $end ] || [ $start -eq $end ]; then
+				echo "\n\033[1;31mStart chapter cannnot have bigger value than the end chapter\033[0m"
+				continue
+
+			elif [ $start -gt $counter ] || [ $start -lt 1 ] || [ $end -gt $counter ] || [ $end -lt 1 ]; then
+				echo "\n\033[1;31mChapter out of range\033[0m"
+				continue
+
+			else
+				echo "\n\033[1;31mInvalid input format\033[0m"
+				continue
+
+			fi
+
+			break
+
+		else
+			echo '\n\033[1;31mPlease input valid number\033[0m'
+			continue
 		fi
 
 	fi
 
 done
+
+while true; do
+	echo -n "\n\033[1;35mDo you want to make the HTML page available in offline mode ? (this will result in longer generating times) [y/n]: \033[0m"
+	read dl_or_st
+
+	case "$dl_or_st" in
+		[yY] ) dl_or_st="dl"; break;;
+		[nN] ) dl_or_st="st"; break;;
+		* ) echo "\n\033[1;31mNo such option exist\033[0m"; continue;;
+	esac
+done
+
+if [ -z $end ]; then
+	chpt_page=$(echo "$clchpt_links" | awk "NR == $start")
+	gen_html "$chpt_page" "$start" "Komi-san wa Chapter $start" "$dl_or_st"
+fi
