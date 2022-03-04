@@ -17,7 +17,7 @@ I dont have PC. Sorry ._.
 
 ## How To Install
 ```sh
-git clone https://github.com/hithere-xd/komionm.git && chmod +x komionm/komionm
+git clone -b komire https://github.com/hithere-xd/komionm.git && chmod +x komionm/komionm
 sh komionm/install.sh
 ```
 
