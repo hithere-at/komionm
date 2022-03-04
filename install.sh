@@ -26,7 +26,7 @@ while true; do
 		mkdir ~/komionm/chapters
 		mkdir ~/komionm/chapters/scans
 		sudo cp komionm /usr/local/bin/komionm
-		sed -i "s|data_path = \".*\"|data_path = \"$gnu_lnx\"|" /usr/local/bin/komionm
+		sed -i "s|data_path=\".*\"|data_path=\"$gnu_lnx\"|" /usr/local/bin/komionm
 		echo "Successfully installed\nChapters download location: $gnu_lnx"
 		break
 
@@ -36,8 +36,8 @@ while true; do
 		mkdir /storage/emulated/0/komionm/chapters
 		mkdir /storage/emulated/0/komionm/chapters/scans
 		cp komionm /data/data/com.termux/files/usr/bin/komionm
-		sed -i "s|data_path = \".*\"|data_path = \"$termux\"|" /data/data/com.termux/files/usr/bin/komionm
-		sed -i "s|#\!/bin/python3|#!/data/data/com.termux/files/usr/bin/python3|" /data/data/com.termux/files/usr/bin/komionm
+		sed -i "s|data_path = \".*\"|data_path=\"$termux\"|" /data/data/com.termux/files/usr/bin/komionm
+		sed -i "s|#\!/bin/sh|#!/data/data/com.termux/files/usr/bin/sh|" /data/data/com.termux/files/usr/bin/komionm
 		echo "Successfully installed\nChapters download location: $termux"
 		break
 

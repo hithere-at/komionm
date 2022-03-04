@@ -1,5 +1,5 @@
 # komionm
-This is a Python script to download said `Komi Can't Communicate` chapters. This script scrape [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the chapters
+This is a shell script to download said `Komi Can't Communicate` chapters. This script scrape [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the chapters
 
 <h2 align="center">Showcase</h2>
 <p align="center"><img src="stuff.gif"></p>
@@ -8,24 +8,23 @@ This is a Python script to download said `Komi Can't Communicate` chapters. This
 I dont have PC. Sorry ._.
 
 ## Requirements
-1. [Python](https://www.python.org)
+1. tac (part of coreutils)
 2. sed
-3. curl
-4. [git](https://git-scm.com)
+3. gawk
+4. curl
+5. grep
 
 ## How To Install
 ```sh
-git clone https://github.com/hithere-xd/komionm.git && chmod +x komionm/komionm
+git clone -b komish https://github.com/hithere-xd/komionm.git && chmod +x komionm/komish
 sh komionm/install.sh
 ```
-
-## Python Dependencies
-1. beautfiulsoup4
 
 ## Just some stuff
 1. This script works for `Termux` legacy version (`<= 0.83`) or later.
 2. `GNU/Linux` version of install is untested, but i think it works just by looking at the command.
-3. This script is tested on Python 3.8, but i think Python 3.6 or above should work
+3. This is purely written in dash. if you have dash installed, then you shouldnt have any problem
+4. This is by far the fastest komionm version
 
 ## Credits
 1. [w3.komisanwamanga.com](https://w3.komisanwamanga.com) for the `Komi Can't Communicate` chapters and easy to scrape website.

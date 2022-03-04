@@ -4,7 +4,6 @@ data_path=chapters/
 
 idgen() { head -c $1 /dev/urandom | base64 | sed "s|/||g"; }
 gen_html() {
-
 	pretty_imgs=""
 	chapter_count=$(echo "$1" | wc -l)
 	x=1
@@ -13,30 +12,42 @@ gen_html() {
 		url_resp_res=$(curl -s "$1")
 		dirty_srcs=$(echo "$url_resp_res" | grep -o 'src="[^"]*"')
 		limb=$(($(echo "$dirty_srcs" | wc -l) - 3))
-		clean_src=$(echo "$dirty_srcs" | awk "NR >= 5 && NR <= $limb")
+		clean_src=$(echo "$dirty_srcs" | gawk "NR >= 5 && NR <= $limb")
 		clean_limb=$(echo "$clean_src" | wc -l)
+
+	else
+		clean_src=""
+
+		while [ $x -le $chapter_count ]; do
+			chpt_name=$(echo "$1" | gawk "NR == $x")
+			url_res=$(curl -s "$chpt_name")
+			dirty_srcs=$(echo "$url_res" | grep -o 'src="[^"]*"')
+			limb=$(($(echo "$dirty_srcs" | wc -l) - 3))
+			clean_src="${clean_src}$(echo "$dirty_srcs" | gawk "NR >= 5 && NR <= $limb")\n"
+			x=$((x + 1))
+		done
+
+		clean_limb=$(($(echo "$clean_src" | wc -l) - 1))
+		x=1
 
 	fi
 
 	if [ "$4" = "dl" ]; then
-		img_cdns=$(echo "$clean_srcs" | sed -E 's/src=|"//g')
-		file_locs=""
+		img_cdns=$(echo "$clean_src" | sed -E 's/src=|"//g')
 
 		while [ $x -le $clean_limb ]; do
 			img_id="$(idgen 6)"
-			curr_cdn=$(echo "$img_cdns" | awk 'NR == $x')
+			curr_cdn=$(echo "$img_cdns" | gawk "NR == $x")
 			format_file="${curr_cdn##*/}"
 			loc="${data_path}scans/${img_id}_${format_file}"
-			file_locs="${file_locs}$loc\n"
-			pretty_imgs="${pretty_imgs}<src=\"${loc}\" alt=\"Image not loading. Please refresh your page\">\n"
-			curl -s -o "$format_file" "$curr_cdn"
+			pretty_imgs="${pretty_imgs}<img src=\"${loc}\" alt=\"Image not loading. Please refresh your page\">\n"
+			curl -s -o "$loc" "$curr_cdn"
 			x=$((x + 1))
 		done
 
 	else
 		while [ $x -le $clean_limb ]; do
-			src_img=$(echo "$clean_src" | awk "NR == $x")
-			echo "$src_img"
+			src_img=$(echo "$clean_src" | gawk "NR == $x")
 			pretty_imgs="${pretty_imgs}<img ${src_img} alt=\"Image not loading. Please refresh your page\">\n"
 			x=$((x + 1))
 		done
@@ -72,7 +83,7 @@ session_file="$(idgen 6).txt"
 home_pg=$(curl -s "$soup_base")
 chpts_links=$(echo "$home_pg" | grep -o "<a href=\"$soup_base/manga/.*/\">.*<")
 rlimit=$(($(echo "$chpts_links" | wc -l) - 5))
-pretty_links=$(echo "$chpts_links" | awk "NR <= $rlimit" | tac)
+pretty_links=$(echo "$chpts_links" | gawk "NR <= $rlimit" | tac)
 
 # Chapter links
 clchpt_links=$(echo "$pretty_links" | sed -E "s/<a href=|\"|>.*//g")
@@ -93,11 +104,19 @@ while true; do
 	echo -n "\n\033[1;35mPlease choose the chapter [1-${counter}]: \033[0m"
 	read start end
 
-	if [ -z $end ]; then
-		if [ $start -eq $start ] 2> /dev/null; then
-			if [ $start -gt $counter ] || [ $start -lt 1 ]; then
-				echo "\n\033[1;31mThere is no the ${start}th chapter\033[0m"
+	if [ -z $start ] && [ -z $end ]; then
+		echo "\n\033[1;31mEmpty input is not allowed\033[0m"
+
+	elif ! [ -z $end 2> /dev/null ]; then
+		if [ $start -eq $start 2> /dev/null ] && [ $end -eq $end 2> /dev/null ]; then
+			if [ $start -gt $end ] || [ $start -eq $end ]; then
+				echo "\n\033[1;31mStart chapter cannnot have bigger value or equal to the end chapter\033[0m"
 				continue
+
+			elif [ $start -gt $counter ] || [ $start -lt 1 ] || [ $end -gt $counter ] || [ $end -lt 1 ]; then
+				echo "\n\033[1;31mChapter out of range\033[0m"
+				continue
+
 			fi
 
 			break
@@ -107,20 +126,11 @@ while true; do
 			continue
 		fi
 
-	elif ! [ -z $end ]; then
-		if [ $start -eq $start ] 2> /dev/null && [ $end -eq $end ] 2> /dev/null; then
-			if [ $start -gt $end ] || [ $start -eq $end ]; then
-				echo "\n\033[1;31mStart chapter cannnot have bigger value than the end chapter\033[0m"
+	elif [ -z $end ]; then
+		if [ $start -eq $start 2> /dev/null ]; then
+			if [ $start -gt $counter ] || [ $start -lt 1 ]; then
+				echo "\n\033[1;31mThere is no the ${start}th chapter\033[0m"
 				continue
-
-			elif [ $start -gt $counter ] || [ $start -lt 1 ] || [ $end -gt $counter ] || [ $end -lt 1 ]; then
-				echo "\n\033[1;31mChapter out of range\033[0m"
-				continue
-
-			else
-				echo "\n\033[1;31mInvalid input format\033[0m"
-				continue
-
 			fi
 
 			break
@@ -146,6 +156,38 @@ while true; do
 done
 
 if [ -z $end ]; then
-	chpt_page=$(echo "$clchpt_links" | awk "NR == $start")
+	chpt_page=$(echo "$clchpt_links" | gawk "NR == $start")
 	gen_html "$chpt_page" "$start" "Komi-san wa Chapter $start" "$dl_or_st"
+	echo "\n\033[1;32mHTML page generated\nLocation: '${data_path}chc_${start}.html'\033[0m"
+
+elif ! [ -z $end ]; then
+	while true; do
+		echo -n "\n\033[1;35mMerge chapters to a single file ? [y/n]: \033[0m"
+		read merge
+
+		case "$merge" in
+			[yY] ) break;;
+			[nN] ) break;;
+			* ) echo "\n\033[1;31mNo such option exist\033[0m"; continue;;
+		esac
+	done
+
+	if [ "$merge" = "n" ]; then
+		y=$start
+
+		while [ $y -le $end ]; do
+			chpt_page=$(echo "$clchpt_links" | gawk "NR == $y")
+			gen_html "$chpt_page" "$y" "Komi-san wa Chapter $y" "$dl_or_st"
+			echo "\n\033[1;32mHTML page generated\nLocation: '${data_path}chc_${y}.html\033[0m"
+			y=$((y + 1))
+		done
+
+	elif [ "$merge" = "y" ]; then
+		chpt_pages=$(echo "$clchpt_links" | gawk "NR >= $start && NR <= $end")
+		echo "\n\033[1;33mThis may take a lot of time. Please make a coffee or \033[1;90mtouch grass\033[1;33m while you wait for the chapters to be downloaded\033[0m"
+		gen_html "$chpt_pages" "${start}_${end}" "Komi-san wa Chapter ${start}-${end}" "$dl_or_st"
+		echo "\n\033[1;32mHTML page have been generated\nLocation: '${data_path}chc_${start}_${end}.html'\033[0m"
+
+	fi
+
 fi
