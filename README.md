@@ -9,10 +9,11 @@ I dont have PC. Sorry ._.
 
 ## Requirements
 1. tac (part of coreutils)
-2. sed
-3. gawk
-4. curl
-5. grep
+2. wc (part of coreutils)
+3. sed
+4. gawk
+5. curl
+6. grep
 
 ## How To Install
 ```sh
