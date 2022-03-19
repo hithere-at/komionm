@@ -95,7 +95,7 @@ pretty_links=$(echo "$chpts_links" | gawk "NR <= $rlimit" | gawk '{a[i++]=$0} EN
 clchpt_links=$(echo "$pretty_links" | sed -E "s/<a href=|\"|>.*//g")
 
 # Chapter names
-cname_links=$(echo "$pretty_links" | sed -E -e "s/<a href=\"[^\"]*\">|<\/a><//g" -e "s/&#8217;/'/g" -e "s/&#8211;/-/g" -e "s/&#038\;/&/g" -e "s/&#8230;/... /g" > ~/.komichi/$session_file)
+cname_links=$(echo "$pretty_links" | sed -E -e "s/<a href=\"[^\"]*\">|<\/a><//g" -e "s/&#8217;/'/g" -e "s/&#8211;/-/g" -e "s/&#038;/&/g" -e "s/&#8230;/... /g" > ~/.komichi/$session_file)
 
 while IFS= read line; do
 	counter=$((counter + 1))
