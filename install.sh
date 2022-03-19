@@ -19,6 +19,7 @@ if ! $(command -v grep > /dev/null 2>&1); then "grep isnt installed. Install it 
 fi
 
 if ! $(command -v wc > /dev/null 2>&1); then "wc isnt installed. Install it using your package manager"; exit 1
+fi
 
 echo "\n1. GNU/Linux\n2. Android (Termux)"
 

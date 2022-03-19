@@ -14,6 +14,8 @@ I dont have PC. Sorry ._.
 4. gawk
 5. curl
 6. grep
+7. head (part of coreutils)
+8. base64 (part of coreutils)
 
 ## How To Install
 ```sh

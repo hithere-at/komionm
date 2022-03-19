@@ -56,22 +56,22 @@ gen_html() {
 
 	while IFS= read -r line; do
 		echo "$line"
-	done <<- EOF > ${data_path}chc_$2.html
-	<!DOCTYPE html>
-	<html>
+	done << EOF > ${data_path}chc_$2.html
+<!DOCTYPE html>
+<html>
 
-		<head>
-			<title>$3</title>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<style type="text/css">body { background-color: #3B3A39; }</style>
-		</head>
+	<head>
+		<title>$3</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style type="text/css">body { background-color: #3B3A39; }</style>
+	</head>
 
-		<body>
-			$pretty_imgs
-		</body>
+	<body>
+		$pretty_imgs
+	</body>
 
-	</html>
-	EOF
+</html>
+EOF
 }
 
 mkdir ~/.komichi 2> /dev/null
@@ -81,22 +81,28 @@ counter=0
 
 session_file="$(idgen 6).txt"
 home_pg=$(curl -s "$soup_base")
+
+if [ $? -ne 0 ]; then
+	echo "\033[1,31mAn error has occured. Please check your internet connection or try again later\033[0m"
+	exit 6
+fi
+
 chpts_links=$(echo "$home_pg" | grep -o "<a href=\"$soup_base/manga/.*/\">.*<")
 rlimit=$(($(echo "$chpts_links" | wc -l) - 5))
-pretty_links=$(echo "$chpts_links" | gawk "NR <= $rlimit" | tac)
+pretty_links=$(echo "$chpts_links" | gawk "NR <= $rlimit" | gawk '{a[i++]=$0} END {for (j=i-1; j>=0;) print a[j--] }') # last gawk pipe is from stackoverflow. thank you kind man :)
 
 # Chapter links
 clchpt_links=$(echo "$pretty_links" | sed -E "s/<a href=|\"|>.*//g")
 
 # Chapter names
-cname_links=$(echo "$pretty_links" | sed -E -e "s/<a href=\"[^\"]*\">|<\/a><//g" -e "s/&#8217;/'/g" -e "s/&#8211\;/-/g" -e "s/&#038\;/&/g" -e "s/&#8230;/... /g" > ~/.komichi/$session_file)
+cname_links=$(echo "$pretty_links" | sed -E -e "s/<a href=\"[^\"]*\">|<\/a><//g" -e "s/&#8217;/'/g" -e "s/&#8211;/-/g" -e "s/&#038\;/&/g" -e "s/&#8230;/... /g" > ~/.komichi/$session_file)
 
 while IFS= read line; do
 	counter=$((counter + 1))
 	echo "\033[1;34m[${counter}] \033[1;36m${line}\033[0m"
 done < ~/.komichi/$session_file
 
-rm ~/.komichi/$session_file 2> /dev/null
+rm -rf ~/.komichi 2> /dev/null
 
 echo "\n\033[1;33mTo download specific range of chapters (choices), use this format 'start_chapter end_chapter'. Example: 47 55\033[0m"
 
